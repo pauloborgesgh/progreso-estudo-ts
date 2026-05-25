@@ -1,12 +1,14 @@
 import { memo } from 'react';
 import { Play, Pause, RotateCcw, Coffee, Brain } from 'lucide-react';
 import { usePomodoro } from '../hooks/usePomodoro';
+import type { CursoId } from '../types/study';
 
 interface PomodoroTimerProps {
+  cursoId: CursoId;
   onSessionComplete?: () => void;
 }
 
-const PomodoroTimer = memo(function PomodoroTimer({ onSessionComplete }: PomodoroTimerProps) {
+const PomodoroTimer = memo(function PomodoroTimer({ cursoId, onSessionComplete }: PomodoroTimerProps) {
   const {
     mode,
     formattedTime,
@@ -16,10 +18,10 @@ const PomodoroTimer = memo(function PomodoroTimer({ onSessionComplete }: Pomodor
     startTimer,
     pauseTimer,
     resetTimer,
-  } = usePomodoro(onSessionComplete);
+  } = usePomodoro(cursoId, onSessionComplete);
 
   return (
-    <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-xl px-4 py-2">
+    <div className="flex items-center gap-3 rounded-xl px-4 py-2" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
       <div className="flex items-center gap-2">
         {mode === 'focus' ? (
           <Brain className="w-4 h-4 text-blue-400" />
@@ -37,7 +39,7 @@ const PomodoroTimer = memo(function PomodoroTimer({ onSessionComplete }: Pomodor
         {isRunning ? (
           <button
             onClick={pauseTimer}
-            className="p-1.5 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-all"
+            className="p-1.5 rounded-lg transition-all" style={{ color: 'var(--text-secondary)' }}
             title="Pausar"
           >
             <Pause className="w-3.5 h-3.5" />
@@ -45,7 +47,7 @@ const PomodoroTimer = memo(function PomodoroTimer({ onSessionComplete }: Pomodor
         ) : (
           <button
             onClick={startTimer}
-            className="p-1.5 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-all"
+            className="p-1.5 rounded-lg transition-all" style={{ color: 'var(--text-secondary)' }}
             title="Iniciar"
           >
             <Play className="w-3.5 h-3.5" />
@@ -53,15 +55,15 @@ const PomodoroTimer = memo(function PomodoroTimer({ onSessionComplete }: Pomodor
         )}
         <button
           onClick={resetTimer}
-          className="p-1.5 rounded-lg hover:bg-white/10 text-slate-500 hover:text-white transition-all"
+          className="p-1.5 rounded-lg transition-all" style={{ color: 'var(--text-muted)' }}
           title="Resetar"
         >
           <RotateCcw className="w-3.5 h-3.5" />
         </button>
       </div>
 
-      <div className="flex items-center gap-1.5 pl-2 border-l border-white/10">
-        <div className="w-16 h-1.5 bg-white/10 rounded-full overflow-hidden">
+      <div className="flex items-center gap-1.5 pl-2" style={{ borderLeftColor: 'var(--border-color)' }}>
+        <div className="w-16 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--bg-card)' }}>
           <div
             className={`h-full rounded-full transition-all duration-1000 ${
               mode === 'focus'

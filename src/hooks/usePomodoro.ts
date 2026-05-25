@@ -1,9 +1,8 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
+import type { CursoId } from '../types/study';
 
 const FOCUS_TIME = 25 * 60;
 const BREAK_TIME = 5 * 60;
-const STORAGE_KEY = 'ts-pomodoro';
-const SESSIONS_KEY = 'ts-pomodoro-sessions';
 
 interface PomodoroState {
   mode: 'focus' | 'break';
@@ -11,17 +10,25 @@ interface PomodoroState {
   isRunning: boolean;
 }
 
-function loadState(): PomodoroState {
+function stateKey(cursoId: CursoId): string {
+  return `${cursoId}-pomodoro`;
+}
+
+function sessionsKey(cursoId: CursoId): string {
+  return `${cursoId}-pomodoro-sessions`;
+}
+
+function loadState(cursoId: CursoId): PomodoroState {
   try {
-    const saved = localStorage.getItem(STORAGE_KEY);
+    const saved = localStorage.getItem(stateKey(cursoId));
     if (saved) return JSON.parse(saved);
   } catch {}
   return { mode: 'focus', timeLeft: FOCUS_TIME, isRunning: false };
 }
 
-function loadSessions(): string[] {
+function loadSessions(cursoId: CursoId): string[] {
   try {
-    const saved = localStorage.getItem(SESSIONS_KEY);
+    const saved = localStorage.getItem(sessionsKey(cursoId));
     if (saved) return JSON.parse(saved);
   } catch {}
   return [];
@@ -31,14 +38,14 @@ function getToday(): string {
   return new Date().toISOString().split('T')[0];
 }
 
-export function usePomodoro(onSessionComplete?: () => void) {
-  const [state, setState] = useState<PomodoroState>(loadState);
-  const [sessions, setSessions] = useState<string[]>(loadSessions);
+export function usePomodoro(cursoId: CursoId, onSessionComplete?: () => void) {
+  const [state, setState] = useState<PomodoroState>(() => loadState(cursoId));
+  const [sessions, setSessions] = useState<string[]>(() => loadSessions(cursoId));
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const saveState = useCallback((newState: PomodoroState) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(newState));
-  }, []);
+    localStorage.setItem(stateKey(cursoId), JSON.stringify(newState));
+  }, [cursoId]);
 
   const playNotification = useCallback(() => {
     try {
@@ -88,7 +95,7 @@ export function usePomodoro(onSessionComplete?: () => void) {
               const today = getToday();
               setSessions(prevSessions => {
                 const updated = [...prevSessions, today];
-                localStorage.setItem(SESSIONS_KEY, JSON.stringify(updated));
+                localStorage.setItem(sessionsKey(cursoId), JSON.stringify(updated));
                 return updated;
               });
               onSessionComplete?.();
@@ -109,7 +116,7 @@ export function usePomodoro(onSessionComplete?: () => void) {
 
       return newState;
     });
-  }, [clearTimer, saveState, playNotification]);
+  }, [clearTimer, saveState, playNotification, cursoId]);
 
   const pauseTimer = useCallback(() => {
     clearTimer();

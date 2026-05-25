@@ -33,11 +33,11 @@ const StatisticsPanel = memo(function StatisticsPanel({
           <div className="w-10 h-10 rounded-xl bg-orange-500/20 flex items-center justify-center">
             <Flame className="w-5 h-5 text-orange-400" />
           </div>
-          <span className="text-slate-400 text-sm font-medium">Sequência</span>
+          <span className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Sequência</span>
         </div>
         <div className="flex items-baseline gap-1">
-          <span className="text-3xl font-bold text-white">{streak}</span>
-          <span className="text-slate-500 text-sm">dias</span>
+          <span className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>{streak}</span>
+          <span className="text-sm" style={{ color: 'var(--text-muted)' }}>dias</span>
         </div>
       </div>
 
@@ -47,12 +47,12 @@ const StatisticsPanel = memo(function StatisticsPanel({
           <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center">
             <Calendar className="w-5 h-5 text-blue-400" />
           </div>
-          <span className="text-slate-400 text-sm font-medium">Esta Semana</span>
+          <span className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Esta Semana</span>
         </div>
         <div className="flex items-center gap-1.5">
           {weekDays.map((day) => (
             <div key={day.date} className="flex flex-col items-center gap-1">
-              <span className="text-[10px] text-slate-600 font-medium">
+              <span className="text-[10px] font-medium" style={{ color: 'var(--text-muted)' }}>
                 {dayLabels[new Date(day.date).getDay()]}
               </span>
               <div
@@ -66,7 +66,7 @@ const StatisticsPanel = memo(function StatisticsPanel({
             </div>
           ))}
         </div>
-        <div className="mt-2 text-xs text-slate-500">
+        <div className="mt-2 text-xs" style={{ color: 'var(--text-muted)' }}>
           {daysStudied}/7 dias
         </div>
       </div>
@@ -77,11 +77,11 @@ const StatisticsPanel = memo(function StatisticsPanel({
           <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center">
             <TrendingUp className="w-5 h-5 text-purple-400" />
           </div>
-          <span className="text-slate-400 text-sm font-medium">Foco Hoje</span>
+          <span className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Foco Hoje</span>
         </div>
         <div className="flex items-baseline gap-1">
-          <span className="text-3xl font-bold text-white">{sessionsToday}</span>
-          <span className="text-slate-500 text-sm">pomodoros</span>
+          <span className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>{sessionsToday}</span>
+          <span className="text-sm" style={{ color: 'var(--text-muted)' }}>pomodoros</span>
         </div>
       </div>
 
@@ -91,11 +91,11 @@ const StatisticsPanel = memo(function StatisticsPanel({
           <div className="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center">
             <TrendingUp className="w-5 h-5 text-green-400" />
           </div>
-          <span className="text-slate-400 text-sm font-medium">Completado</span>
+          <span className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Completado</span>
         </div>
         <div className="flex items-baseline gap-1">
-          <span className="text-3xl font-bold text-white">{overallPercent}%</span>
-          <span className="text-slate-500 text-sm">({diasConcluidos}/{totalDias})</span>
+          <span className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>{overallPercent}%</span>
+          <span className="text-sm" style={{ color: 'var(--text-muted)' }}>({diasConcluidos}/{totalDias})</span>
         </div>
       </div>
     </div>

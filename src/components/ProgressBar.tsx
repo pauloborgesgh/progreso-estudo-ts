@@ -7,7 +7,7 @@ interface ProgressBarProps {
 
 const ProgressBar = memo(function ProgressBar({ value, color }: ProgressBarProps) {
   return (
-    <div className="h-3 bg-white/5 rounded-full overflow-hidden backdrop-blur-sm">
+    <div className="h-3 rounded-full overflow-hidden backdrop-blur-sm" style={{ backgroundColor: 'var(--bg-card)' }}>
       <div
         className={`h-full bg-gradient-to-r ${color} transition-all duration-700 rounded-full relative`}
         style={{ width: `${value}%` }}
