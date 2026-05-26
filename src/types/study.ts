@@ -40,5 +40,5 @@ export interface Progresso {
 
 export const cursos: { id: CursoId; nome: string; semanas: number; totalDias: number; cor: string }[] = [
   { id: 'ts', nome: 'TypeScript', semanas: 6, totalDias: 30, cor: 'blue' },
-  { id: 'js', nome: 'JavaScript', semanas: 10, totalDias: 50, cor: 'yellow' },
+  { id: 'js', nome: 'JavaScript', semanas: 18, totalDias: 90, cor: 'yellow' },
 ];
