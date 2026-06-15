@@ -1,0 +1,288 @@
+export type NeonColor =
+  | "green" | "cyan" | "purple" | "orange" | "pink"
+  | "yellow" | "blue" | "red" | "lime" | "magenta";
+
+export interface Topic {
+  id: number;
+  title: string;
+  color: NeonColor;
+  icon: string;
+  subtopics: string[];
+  description: string;
+  practice: string;
+  links: { label: string; url: string }[];
+}
+
+export type CourseId = "js" | "ts" | "angular";
+
+export const courseInfo: Record<CourseId, { label: string; icon: string }> = {
+  js: { label: "JavaScript", icon: "FileCode" },
+  ts: { label: "TypeScript", icon: "FileType" },
+  angular: { label: "Angular", icon: "CircleDot" },
+};
+
+export const jsTopics: Topic[] = [
+  {
+    id: 1,
+    title: "Básico de JavaScript",
+    color: "green",
+    icon: "Code2",
+    subtopics: [
+      "O que é JavaScript",
+      "Variáveis (var, let, const)",
+      "Tipos de dados",
+      "Operadores (aritméticos, comparação, lógicos)",
+      "Conversão e coerção de tipos",
+      "Entrada/Saída (prompt, alert, console)",
+    ],
+    description: "Fundamentos da linguagem: como declarar variáveis, tipos primitivos e os operadores que você usará todo dia.",
+    practice: "Crie um script que pede o nome e a idade do usuário e imprime uma saudação personalizada no console.",
+    links: [
+      { label: "MDN — Primeiros passos com JavaScript", url: "https://developer.mozilla.org/pt-BR/docs/Learn/JavaScript/First_steps" },
+      { label: "JavaScript.info — O básico", url: "https://javascript.info/first-steps" },
+    ],
+  },
+  {
+    id: 2,
+    title: "Controle de Fluxo",
+    color: "cyan",
+    icon: "GitBranch",
+    subtopics: ["if, else, else if", "switch", "Loops: for, while, do...while", "break & continue"],
+    description: "Como tomar decisões e repetir ações no código.",
+    practice: "Escreva um programa que imprime FizzBuzz de 1 a 100.",
+    links: [{ label: "MDN — Tomada de decisões", url: "https://developer.mozilla.org/pt-BR/docs/Learn/JavaScript/Building_blocks/conditionals" }],
+  },
+  {
+    id: 3,
+    title: "Funções",
+    color: "purple",
+    icon: "FunctionSquare",
+    subtopics: [
+      "Declaração de função",
+      "Expressão de função",
+      "Arrow functions",
+      "Parâmetros e parâmetros padrão",
+      "Return",
+      "Callbacks",
+      "Funções de ordem superior (intro)",
+    ],
+    description: "Funções são blocos reutilizáveis de código — a base de tudo em JavaScript.",
+    practice: "Implemente uma função calcular(a, b, op) que aceita +, -, *, /.",
+    links: [{ label: "MDN — Funções", url: "https://developer.mozilla.org/pt-BR/docs/Web/JavaScript/Guide/Functions" }],
+  },
+  {
+    id: 4,
+    title: "Arrays",
+    color: "pink",
+    icon: "List",
+    subtopics: [
+      "Criando arrays",
+      "Métodos: push, pop, shift, unshift, slice, splice",
+      "Iteração: map, filter, reduce, forEach",
+      "Desestruturação de arrays",
+    ],
+    description: "Coleções ordenadas e os métodos modernos para trabalhar com elas.",
+    practice: "Receba uma lista de números e devolva apenas os pares, dobrados, somados.",
+    links: [{ label: "MDN — Array", url: "https://developer.mozilla.org/pt-BR/docs/Web/JavaScript/Reference/Global_Objects/Array" }],
+  },
+  {
+    id: 5,
+    title: "Objetos",
+    color: "orange",
+    icon: "Boxes",
+    subtopics: [
+      "Criação de objetos",
+      "Propriedades e métodos",
+      "Objetos aninhados",
+      "Palavra-chave this",
+      "Object.keys, values, entries",
+      "Desestruturação",
+    ],
+    description: "Estruturas chave–valor que modelam dados do mundo real.",
+    practice: "Modele um objeto usuario com endereço aninhado e imprima cada chave/valor.",
+    links: [{ label: "MDN — Trabalhando com objetos", url: "https://developer.mozilla.org/pt-BR/docs/Web/JavaScript/Guide/Working_with_Objects" }],
+  },
+  {
+    id: 6,
+    title: "DOM (Document Object Model)",
+    color: "cyan",
+    icon: "MonitorSmartphone",
+    subtopics: [
+      "Selecionando elementos (getElementById, querySelector)",
+      "Manipulação: innerHTML, textContent, style",
+      "Eventos: click, change, submit",
+      "Event bubbling & capturing",
+    ],
+    description: "Como o JavaScript conversa com o HTML da página.",
+    practice: "Crie um botão que alterna o tema claro/escuro do <body>.",
+    links: [{ label: "MDN — Introdução ao DOM", url: "https://developer.mozilla.org/pt-BR/docs/Web/API/Document_Object_Model/Introduction" }],
+  },
+  {
+    id: 7,
+    title: "Recursos ES6+",
+    color: "blue",
+    icon: "Sparkles",
+    subtopics: [
+      "let & const",
+      "Arrow functions",
+      "Template literals",
+      "Spread & Rest",
+      "Desestruturação",
+      "Parâmetros padrão",
+      "Módulos (import/export)",
+    ],
+    description: "A sintaxe moderna que mudou como se escreve JavaScript.",
+    practice: "Refatore um código antigo (var, function) para ES6+ usando const, arrow e destructuring.",
+    links: [{ label: "JavaScript.info — Recursos modernos", url: "https://javascript.info/" }],
+  },
+  {
+    id: 8,
+    title: "Funções Avançadas",
+    color: "green",
+    icon: "Rocket",
+    subtopics: ["Closures", "Currying", "Function binding (bind, call, apply)", "IIFE"],
+    description: "Padrões poderosos que separam o iniciante do dev experiente.",
+    practice: "Crie um contador com closure que não pode ser zerado externamente.",
+    links: [{ label: "MDN — Closures", url: "https://developer.mozilla.org/pt-BR/docs/Web/JavaScript/Closures" }],
+  },
+  {
+    id: 9,
+    title: "JavaScript Assíncrono",
+    color: "purple",
+    icon: "Clock",
+    subtopics: [
+      "Callbacks",
+      "Callback hell",
+      "Promises",
+      ".then() & .catch()",
+      "async / await",
+      "Tratamento de erros (try...catch)",
+    ],
+    description: "Como lidar com operações que demoram — rede, timers, arquivos.",
+    practice: "Use fetch + async/await para buscar uma piada de uma API pública e exibir na tela.",
+    links: [{ label: "MDN — Async/Await", url: "https://developer.mozilla.org/pt-BR/docs/Learn/JavaScript/Asynchronous" }],
+  },
+  {
+    id: 10,
+    title: "API & Fetch",
+    color: "pink",
+    icon: "Globe",
+    subtopics: ["Fetch API", "Métodos HTTP (GET, POST, PUT, DELETE)", "Tratamento de JSON", "Integração REST"],
+    description: "Como consumir APIs e trazer dados externos para sua aplicação.",
+    practice: "Construa um app que lista repositórios do GitHub de um usuário usando a API pública.",
+    links: [{ label: "MDN — Fetch API", url: "https://developer.mozilla.org/pt-BR/docs/Web/API/Fetch_API" }],
+  },
+  {
+    id: 11,
+    title: "Tratamento de Erros",
+    color: "orange",
+    icon: "AlertTriangle",
+    subtopics: ["try, catch, finally", "Erros customizados (throw)", "Debugging (console, dev tools)"],
+    description: "Como capturar e tratar problemas sem quebrar a aplicação.",
+    practice: "Envolva uma chamada fetch em try/catch e crie uma classe ApiError customizada.",
+    links: [{ label: "MDN — Controle de erros", url: "https://developer.mozilla.org/pt-BR/docs/Web/JavaScript/Reference/Statements/try...catch" }],
+  },
+  {
+    id: 12,
+    title: "Armazenamento no Navegador",
+    color: "yellow",
+    icon: "Database",
+    subtopics: ["LocalStorage", "SessionStorage", "Cookies (ideia básica)"],
+    description: "Como guardar dados no navegador para persistir entre sessões.",
+    practice: "Crie uma lista de tarefas que persiste no localStorage.",
+    links: [{ label: "MDN — Web Storage API", url: "https://developer.mozilla.org/pt-BR/docs/Web/API/Web_Storage_API" }],
+  },
+  {
+    id: 13,
+    title: "POO (Orientação a Objetos)",
+    color: "blue",
+    icon: "User",
+    subtopics: ["Classes & Objetos", "Construtor", "Herança", "Encapsulamento", "Prototypes"],
+    description: "Como organizar código em classes e modelar o domínio.",
+    practice: "Modele uma hierarquia: Animal → Cachorro, Gato com métodos próprios.",
+    links: [{ label: "MDN — Classes", url: "https://developer.mozilla.org/pt-BR/docs/Web/JavaScript/Reference/Classes" }],
+  },
+  {
+    id: 14,
+    title: "Conceitos Avançados",
+    color: "cyan",
+    icon: "Brain",
+    subtopics: ["Event Loop", "Call Stack", "Gerenciamento de memória", "Hoisting", "Contexto de execução", "Escopo léxico"],
+    description: "Como o JavaScript funciona por baixo dos panos.",
+    practice: "Desenhe no papel a ordem de execução de um setTimeout dentro de um Promise.then.",
+    links: [{ label: "Loupe — Visualizando o Event Loop", url: "http://latentflip.com/loupe/" }],
+  },
+  {
+    id: 15,
+    title: "Programação Funcional",
+    color: "lime",
+    icon: "Sigma",
+    subtopics: ["Funções puras", "Imutabilidade", "Funções de ordem superior", "Composição"],
+    description: "Um estilo de programar que reduz bugs e melhora a legibilidade.",
+    practice: "Implemente compose(f, g, h)(x) e use para transformar uma string.",
+    links: [{ label: "Eloquent JavaScript — Funcional", url: "https://eloquentjavascript.net/05_higher_order.html" }],
+  },
+  {
+    id: 16,
+    title: "Otimização de Performance",
+    color: "magenta",
+    icon: "Gauge",
+    subtopics: ["Debouncing", "Throttling", "Memoization"],
+    description: "Técnicas para deixar sua aplicação rápida e responsiva.",
+    practice: "Implemente debounce e use num campo de busca que dispara uma API.",
+    links: [{ label: "MDN — Performance", url: "https://developer.mozilla.org/pt-BR/docs/Web/Performance" }],
+  },
+  {
+    id: 17,
+    title: "JS em Projetos Reais",
+    color: "purple",
+    icon: "Briefcase",
+    subtopics: ["Validação de formulários", "Projetos com DOM", "Projetos com APIs", "Autenticação (básico)", "Tratamento de erros"],
+    description: "Hora de juntar tudo em projetos completos.",
+    practice: "Construa um clone simples do Trello com drag & drop usando só HTML, CSS e JS.",
+    links: [{ label: "Frontend Mentor — Desafios", url: "https://www.frontendmentor.io/" }],
+  },
+  {
+    id: 18,
+    title: "Ecossistema JS Moderno",
+    color: "pink",
+    icon: "Package",
+    subtopics: ["NPM / Yarn", "Bundlers (Webpack, Vite)", "Babel", "ES Modules"],
+    description: "As ferramentas que cercam o JavaScript no dia a dia profissional.",
+    practice: "Crie um projeto do zero com Vite + ES Modules e publique na Vercel.",
+    links: [{ label: "Vite — Guia", url: "https://vitejs.dev/guide/" }],
+  },
+  {
+    id: 19,
+    title: "Testes",
+    color: "yellow",
+    icon: "ClipboardCheck",
+    subtopics: ["Testes unitários", "Jest / Vitest", "Testes de integração"],
+    description: "Escreva código que não quebra quando você mudar amanhã.",
+    practice: "Escreva 5 testes unitários para a sua função calcular do tópico 3.",
+    links: [{ label: "Vitest — Guia", url: "https://vitest.dev/guide/" }],
+  },
+  {
+    id: 20,
+    title: "Tópicos Avançados (Pro)",
+    color: "green",
+    icon: "Trophy",
+    subtopics: ["Web Workers", "Service Workers", "WebSockets", "GraphQL (intro)"],
+    description: "Os assuntos que diferenciam um JS dev pleno de um sênior.",
+    practice: "Crie um chat em tempo real simples usando WebSockets.",
+    links: [{ label: "MDN — Web Workers", url: "https://developer.mozilla.org/pt-BR/docs/Web/API/Web_Workers_API" }],
+  },
+];
+
+import { tsTopics as _tsTopics } from "./roadmap-data-ts";
+export { _tsTopics as tsTopics };
+import { angularTopics as _angularTopics } from "./roadmap-data-angular";
+export { _angularTopics as angularTopics };
+
+export const courseTopics: Record<CourseId, Topic[]> = {
+  js: jsTopics,
+  ts: _tsTopics,
+  angular: _angularTopics,
+};
+
+export const topics = jsTopics;
