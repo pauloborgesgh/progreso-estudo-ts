@@ -1,16 +1,9 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import type { CourseId, Topic } from "../data/roadmap-data";
+import { useEffect, useState, type ReactNode } from "react";
+import type { CourseId } from "../data/roadmap-data";
 import { courseTopics } from "../data/roadmap-data";
+import { CourseContext } from "./course-context";
 
 const COURSE_KEY = "js-roadmap-active-course";
-
-interface CourseContextType {
-  course: CourseId;
-  setCourse: (c: CourseId) => void;
-  topics: Topic[];
-}
-
-const CourseContext = createContext<CourseContextType | null>(null);
 
 function loadCourse(): CourseId {
   try {
@@ -32,10 +25,4 @@ export function CourseProvider({ children }: { children: ReactNode }) {
       {children}
     </CourseContext.Provider>
   );
-}
-
-export function useCourse() {
-  const ctx = useContext(CourseContext);
-  if (!ctx) throw new Error("useCourse must be used within CourseProvider");
-  return ctx;
 }

@@ -1,12 +1,7 @@
 import { motion } from "framer-motion";
-import { Check, Code2, type LucideIcon } from "lucide-react";
-import * as LucideIcons from "lucide-react";
+import { Check, PenLine } from "lucide-react";
 import type { Topic } from "../data/roadmap-data";
-
-function getIcon(name: string): LucideIcon {
-  const key = name as keyof typeof LucideIcons;
-  return (LucideIcons[key] as LucideIcon) ?? Code2;
-}
+import { DynamicIcon } from "./ui/DynamicIcon";
 
 export function TopicCard({
   topic,
@@ -14,6 +9,7 @@ export function TopicCard({
   subDone,
   onToggle,
   onOpen,
+  onExercise,
   delay,
 }: {
   topic: Topic;
@@ -21,17 +17,20 @@ export function TopicCard({
   subDone: number;
   onToggle: () => void;
   onOpen: () => void;
+  onExercise: () => void;
   delay: number;
 }) {
-  const Icon = getIcon(topic.icon);
   const neonColor = `var(--neon-${topic.color})`;
 
   return (
     <motion.article
+      layout
       initial={{ opacity: 0, y: 16 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-60px" }}
-      transition={{ duration: 0.4, delay }}
+      whileHover={{ scale: 1.02, transition: { duration: 0.2 } }}
+      whileTap={{ scale: 0.97 }}
+      transition={{ duration: 0.4, delay, type: "spring", stiffness: 200, damping: 20 }}
       className={`group relative overflow-hidden rounded-2xl border border-white/10 bg-card/70 p-5 backdrop-blur transition hover:ring-glow ${completed ? "opacity-60" : ""}`}
       style={{ color: neonColor } as React.CSSProperties}
     >
@@ -41,7 +40,7 @@ export function TopicCard({
             className="flex size-10 items-center justify-center rounded-lg border bg-background/60"
             style={{ borderColor: neonColor, color: neonColor }}
           >
-            <Icon className="text-current" size={20} />
+            <DynamicIcon name={topic.icon} className="text-current" size={20} />
           </div>
           <div>
             <div
@@ -93,20 +92,37 @@ export function TopicCard({
         <span className="font-mono text-muted-foreground">
           {subDone}/{topic.subtopics.length} subtemas
         </span>
-        <button
-          onClick={onOpen}
-          className="rounded-full border border-white/10 px-3 py-1 font-medium text-foreground transition hover:border-current hover:text-current"
-          onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = neonColor;
-            e.currentTarget.style.color = neonColor;
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = "";
-            e.currentTarget.style.color = "";
-          }}
-        >
-          Ver detalhes →
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onExercise}
+            className="inline-flex items-center gap-1 rounded-full border border-white/10 px-3 py-1 font-medium text-foreground transition hover:border-current hover:text-current"
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = neonColor;
+              e.currentTarget.style.color = neonColor;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = "";
+              e.currentTarget.style.color = "";
+            }}
+          >
+            <PenLine size={12} />
+            Exercitar
+          </button>
+          <button
+            onClick={onOpen}
+            className="rounded-full border border-white/10 px-3 py-1 font-medium text-foreground transition hover:border-current hover:text-current"
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = neonColor;
+              e.currentTarget.style.color = neonColor;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = "";
+              e.currentTarget.style.color = "";
+            }}
+          >
+            Ver detalhes →
+          </button>
+        </div>
       </div>
     </motion.article>
   );

@@ -1,17 +1,18 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   Search, X, RotateCcw, Upload, Download, Gauge, Layers,
   PlayCircle, FileCode, FileType, CircleDot,
 } from "lucide-react";
 import { useProgress } from "./hooks/useProgress";
 import { useStreak } from "./hooks/useStreak";
-import { useCourse } from "./contexts/CourseContext";
+import { useCourse } from "./contexts/useCourse";
 import { TopicCard } from "./components/TopicCard";
 import { TopicDialog } from "./components/TopicDialog";
 import { Dashboard } from "./components/Dashboard";
 import { DailyTip } from "./components/DailyTip";
 import { Flashcards } from "./components/Flashcards";
+import { ExerciseView } from "./components/ExerciseView";
 import { Pomodoro } from "./components/Pomodoro";
 import { LofiPlayer } from "./components/LofiPlayer";
 import { courseInfo, type CourseId, type Topic } from "./data/roadmap-data";
@@ -31,12 +32,83 @@ type Filter = "all" | "todo" | "done";
 
 const courses: CourseId[] = ["js", "ts", "angular"];
 
+const courseOrder: Record<CourseId, number> = { js: 0, ts: 1, angular: 2 };
+
+const DAYS_LABELS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+
+function StreakCalendar({ dates }: { dates: string[] }) {
+  const dateSet = useMemo(() => new Set(dates), [dates]);
+
+  const weeks = useMemo(() => {
+    const today = new Date();
+    const w: { date: Date; active: boolean }[][] = [];
+    const start = new Date(today);
+    start.setDate(start.getDate() - 48);
+    start.setHours(0, 0, 0, 0);
+
+    let currentWeek: { date: Date; active: boolean }[] = [];
+    for (let d = new Date(start); d <= today; d.setDate(d.getDate() + 1)) {
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+      currentWeek.push({ date: new Date(d), active: dateSet.has(key) });
+      if (currentWeek.length === 7) {
+        w.push(currentWeek);
+        currentWeek = [];
+      }
+    }
+    if (currentWeek.length > 0) w.push(currentWeek);
+    return w;
+  }, [dateSet]);
+
+  return (
+    <div className="mt-4 flex items-start gap-3">
+      <div className="flex flex-col gap-[3px] pt-5">
+        {[0, 2, 4, 6].map((d) => (
+          <span key={d} className="h-[10px] text-[8px] leading-[10px] text-muted-foreground/60">
+            {DAYS_LABELS[d].slice(0, 1)}
+          </span>
+        ))}
+      </div>
+      <div className="flex gap-[3px] overflow-x-auto">
+        {weeks.map((week, wi) => (
+          <div key={wi} className="flex flex-col gap-[3px]">
+            {week.map((day, di) => (
+              <div
+                key={di}
+                className="size-[10px] rounded-sm"
+                style={{
+                  backgroundColor: day.active
+                    ? "var(--neon-green)"
+                    : "rgba(255,255,255,0.06)",
+                  opacity: day.active ? 1 : 1,
+                }}
+                title={`${day.date.toLocaleDateString("pt-BR")}${day.active ? " — estudou" : ""}`}
+              />
+            ))}
+          </div>
+        ))}
+      </div>
+      <span className="self-end pb-0.5 text-[8px] text-muted-foreground/60">
+        Últimos 49 dias
+      </span>
+    </div>
+  );
+}
+
 function App() {
   const { course, setCourse, topics } = useCourse();
   const progress = useProgress(course);
-  const { streak, recordStudy } = useStreak(course);
+  const { streak, dates: studyDates, recordStudy } = useStreak(course);
 
-  useEffect(() => { window.scrollTo({ top: 0, behavior: "smooth" }); }, [course]);
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    document.title = `Roadmap ${courseInfo[course].label} — Do Básico ao Avançado`;
+  }, [course]);
+
+  useEffect(() => {
+    if ('ontouchstart' in window) {
+      document.body.addEventListener('touchstart', () => {});
+    }
+  }, []);
 
   const [filter, setFilter] = useState<Filter>("all");
   const [open, setOpen] = useState<Topic | null>(null);
@@ -44,6 +116,14 @@ function App() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [flashOpen, setFlashOpen] = useState(false);
   const [dashOpen, setDashOpen] = useState(false);
+  const [exercisingTopic, setExercisingTopic] = useState<Topic | null>(null);
+  const [direction, setDirection] = useState(0);
+  const prevCourseRef = useRef(courseOrder[course]);
+
+  useEffect(() => {
+    setDirection(courseOrder[course] - prevCourseRef.current);
+    prevCourseRef.current = courseOrder[course];
+  }, [course]);
 
   const visible = useMemo(() => {
     const q = normalize(query.trim());
@@ -58,7 +138,7 @@ function App() {
       });
     }
     return list;
-  }, [filter, query, progress]);
+  }, [filter, query, progress, topics]);
 
   const nextTopic = useMemo(
     () => topics.find((t) => !progress.isCompleted(t.id)),
@@ -176,6 +256,9 @@ function App() {
             <div className="font-mono text-4xl font-bold text-neon-cyan text-glow">{pct}%</div>
           </div>
         </div>
+        {studyDates.length > 0 && (
+          <StreakCalendar dates={studyDates} />
+        )}
         <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/5">
           <div
             className="h-full bg-gradient-to-r from-neon-green via-neon-cyan to-neon-purple transition-all duration-700"
@@ -243,7 +326,10 @@ function App() {
               }}
             />
             <button
-              onClick={progress.reset}
+              onClick={() => {
+                if (confirm(`Tem certeza que deseja resetar todo o progresso em ${courseInfo[course].label}?`))
+                  progress.reset();
+              }}
               className="inline-flex items-center gap-1.5 rounded-full border border-white/10 px-3 py-1.5 text-xs text-muted-foreground transition hover:border-neon-red/40 hover:text-neon-red"
             >
               <RotateCcw size={12} />
@@ -303,30 +389,44 @@ function App() {
       </section>
 
       {/* Topic Grid */}
-      <section className="mt-10">
-        <ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {visible.map((topic, i) => (
-            <li key={topic.id}>
-              <TopicCard
-                topic={topic}
-                completed={progress.isCompleted(topic.id)}
-                subDone={progress.subtopicsDone(topic.id).length}
-                onToggle={() => { progress.toggleTopic(topic.id); recordStudy(); }}
-                onOpen={() => setOpen(topic)}
-                delay={i * 0.03}
-              />
-            </li>
-          ))}
-        </ul>
+      <AnimatePresence mode="wait">
+        <motion.section
+          key={course}
+          initial={{ opacity: 0, x: direction > 0 ? 40 : -40 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: direction > 0 ? -40 : 40 }}
+          transition={{ duration: 0.22, ease: "easeInOut" }}
+          className="mt-10"
+        >
+          <ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {visible.map((topic, i) => (
+              <motion.li
+                key={`${course}-${topic.id}`}
+                layout
+                transition={{ type: "spring", stiffness: 260, damping: 24 }}
+              >
+                <TopicCard
+                  topic={topic}
+                  completed={progress.isCompleted(topic.id)}
+                  subDone={progress.subtopicsDone(topic.id).length}
+                  onToggle={() => { progress.toggleTopic(topic.id); recordStudy(); }}
+                  onOpen={() => setOpen(topic)}
+                  onExercise={() => setExercisingTopic(topic)}
+                  delay={i * 0.03}
+                />
+              </motion.li>
+            ))}
+          </ul>
 
-        {visible.length === 0 && (
-          <div className="rounded-2xl border border-dashed border-white/10 p-10 text-center text-sm text-muted-foreground">
-            {query
-              ? `Nada encontrado para "${query}".`
-              : "Nenhum tópico para mostrar com este filtro."}
-          </div>
-        )}
-      </section>
+          {visible.length === 0 && (
+            <div className="rounded-2xl border border-dashed border-white/10 p-10 text-center text-sm text-muted-foreground">
+              {query
+                ? `Nada encontrado para "${query}".`
+                : "Nenhum tópico para mostrar com este filtro."}
+            </div>
+          )}
+        </motion.section>
+      </AnimatePresence>
 
       <footer className="mt-20 border-t border-white/5 pt-8 text-center text-xs text-muted-foreground">
         Feito para estudar. Inspirado no roadmap{" "}
@@ -350,6 +450,17 @@ function App() {
 
       <AnimatePresence>
         {flashOpen && <Flashcards onClose={() => setFlashOpen(false)} />}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {exercisingTopic && (
+          <ExerciseView
+            topic={exercisingTopic}
+            onClose={() => setExercisingTopic(null)}
+            doneIdx={progress.subtopicsDone(exercisingTopic.id)}
+            onToggleSub={(i) => { progress.toggleSubtopic(exercisingTopic.id, i); recordStudy(); }}
+          />
+        )}
       </AnimatePresence>
 
       <Pomodoro />

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { CourseId } from "../data/roadmap-data";
 
 interface ProgressState {
@@ -26,19 +26,19 @@ function read(key: string): ProgressState {
 }
 
 export function useProgress(course: CourseId) {
-  const storageKey = useMemo(() => `js-roadmap-${course}-v1`, [course]);
-  const [state, setState] = useState<ProgressState>(empty);
-  const [hydrated, setHydrated] = useState(false);
+  const storageKey = `js-roadmap-${course}-v1`;
+  const [state, setState] = useState<ProgressState>(() => read(storageKey));
+  const hydrated = true;
 
+  // Sync from localStorage when course changes
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setState(read(storageKey));
-    setHydrated(true);
   }, [storageKey]);
 
   useEffect(() => {
-    if (!hydrated) return;
     window.localStorage.setItem(storageKey, JSON.stringify(state));
-  }, [state, hydrated, storageKey]);
+  }, [state, storageKey]);
 
   const toggleTopic = useCallback((id: number) => {
     setState((s) => {

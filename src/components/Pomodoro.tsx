@@ -1,10 +1,47 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useReducer } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Pause, Play, RotateCcw, Timer, X, Coffee } from "lucide-react";
 import { playBeep } from "../lib/audio";
 
 const FOCUS = 25 * 60;
 const BREAK = 5 * 60;
+
+type PomodoroState = {
+  mode: "focus" | "break";
+  left: number;
+  running: boolean;
+  cycles: number;
+};
+
+type Action =
+  | { type: "TICK" }
+  | { type: "TOGGLE_RUNNING" }
+  | { type: "RESET" }
+  | { type: "SWITCH_MODE"; mode: "focus" | "break" };
+
+function pomodoroReducer(state: PomodoroState, action: Action): PomodoroState {
+  switch (action.type) {
+    case "TICK": {
+      if (!state.running) return state;
+      if (state.left <= 1) {
+        const isFocus = state.mode === "focus";
+        return {
+          mode: isFocus ? "break" : "focus",
+          left: isFocus ? BREAK : FOCUS,
+          running: false,
+          cycles: isFocus ? state.cycles + 1 : state.cycles,
+        };
+      }
+      return { ...state, left: state.left - 1 };
+    }
+    case "TOGGLE_RUNNING":
+      return { ...state, running: !state.running };
+    case "RESET":
+      return { ...state, running: false, left: state.mode === "focus" ? FOCUS : BREAK };
+    case "SWITCH_MODE":
+      return { ...state, running: false, mode: action.mode, left: action.mode === "focus" ? FOCUS : BREAK };
+  }
+}
 
 function fmt(s: number) {
   const m = Math.floor(s / 60);
@@ -14,69 +51,69 @@ function fmt(s: number) {
 
 export function Pomodoro() {
   const [open, setOpen] = useState(false);
-  const [mode, setMode] = useState<"focus" | "break">("focus");
-  const [left, setLeft] = useState(FOCUS);
-  const [running, setRunning] = useState(false);
-  const [cycles, setCycles] = useState(0);
-  const intRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [state, dispatch] = useReducer(pomodoroReducer, {
+    mode: "focus",
+    left: FOCUS,
+    running: false,
+    cycles: 0,
+  });
 
+  // Timer interval
   useEffect(() => {
-    if (!running) return;
-    intRef.current = setInterval(() => {
-      setLeft((s) => (s > 0 ? s - 1 : 0));
-    }, 1000);
-    return () => {
-      if (intRef.current) clearInterval(intRef.current);
-    };
-  }, [running]);
+    if (!state.running) return;
+    const id = setInterval(() => dispatch({ type: "TICK" }), 1000);
+    return () => clearInterval(id);
+  }, [state.running]);
 
+  // Side effects when timer completes (beep + notification)
+  const prevRunningRef = useRef(state.running);
+  const prevLeftRef = useRef(state.left);
   useEffect(() => {
-    if (left === 0 && running) {
-      setRunning(false);
-      if (mode === "focus") {
-        setCycles((c) => c + 1);
-        setMode("break");
-        setLeft(BREAK);
-      } else {
-        setMode("focus");
-        setLeft(FOCUS);
-      }
+    if (prevRunningRef.current && !state.running && prevLeftRef.current <= 1) {
       playBeep();
+      if (typeof Notification !== "undefined" && Notification.permission === "granted") {
+        const wasFocus = state.mode === "focus";
+        new Notification(
+          wasFocus ? "Pomodoro — Hora da pausa!" : "Pomodoro — Hora de focar!",
+          {
+            body: wasFocus
+              ? "Ciclo de foco concluído. Faça uma pausa de 5 minutos."
+              : "Pausa concluída. Volte ao foco!",
+          },
+        );
+      }
     }
-  }, [left, running, mode]);
+    prevRunningRef.current = state.running;
+    prevLeftRef.current = state.left;
+  });
 
   useEffect(() => {
     if (!open) return;
+    if (typeof Notification !== "undefined" && Notification.permission === "default") {
+      Notification.requestPermission();
+    }
     const handler = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, [open]);
 
-  const total = mode === "focus" ? FOCUS : BREAK;
-  const pct = ((total - left) / total) * 100;
+  const total = state.mode === "focus" ? FOCUS : BREAK;
+  const pct = ((total - state.left) / total) * 100;
 
-  const reset = () => {
-    setRunning(false);
-    setLeft(mode === "focus" ? FOCUS : BREAK);
-  };
-
-  const switchMode = (m: "focus" | "break") => {
-    setMode(m);
-    setRunning(false);
-    setLeft(m === "focus" ? FOCUS : BREAK);
-  };
+  const reset = () => dispatch({ type: "RESET" });
+  const switchMode = (m: "focus" | "break") => dispatch({ type: "SWITCH_MODE", mode: m });
 
   return (
     <>
       <button
         onClick={() => setOpen(true)}
         className={`fixed bottom-5 right-5 z-40 flex items-center gap-2 rounded-full border border-white/10 bg-card/90 px-4 py-2.5 font-mono text-sm text-foreground shadow-lg backdrop-blur transition hover:border-neon-cyan/40 hover:text-neon-cyan ${
-          running && "border-neon-cyan/60 text-neon-cyan text-glow"
+          state.running && "border-neon-cyan/60 text-neon-cyan text-glow"
         }`}
         aria-label="Abrir Pomodoro"
       >
         <Timer size={16} />
-        {fmt(left)}
+        {fmt(state.left)}
       </button>
 
       <AnimatePresence>
@@ -109,14 +146,14 @@ export function Pomodoro() {
 
               <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-muted-foreground">
                 <Timer size={12} className="text-neon-cyan" />
-                Pomodoro · {cycles} ciclo{cycles === 1 ? "" : "s"}
+                Pomodoro · {state.cycles} ciclo{state.cycles === 1 ? "" : "s"}
               </div>
 
               <div className="mt-2 flex gap-1 rounded-full border border-white/10 bg-background/50 p-1 text-xs">
                 <button
                   onClick={() => switchMode("focus")}
                   className={`flex-1 rounded-full px-3 py-1.5 font-medium transition ${
-                    mode === "focus"
+                    state.mode === "focus"
                       ? "bg-neon-cyan/10 text-neon-cyan"
                       : "text-muted-foreground hover:text-foreground"
                   }`}
@@ -126,7 +163,7 @@ export function Pomodoro() {
                 <button
                   onClick={() => switchMode("break")}
                   className={`flex-1 rounded-full px-3 py-1.5 font-medium transition ${
-                    mode === "break"
+                    state.mode === "break"
                       ? "bg-neon-green/10 text-neon-green"
                       : "text-muted-foreground hover:text-foreground"
                   }`}
@@ -137,30 +174,30 @@ export function Pomodoro() {
 
               <div
                 className={`mt-6 text-center font-mono text-6xl font-bold tabular-nums ${
-                  mode === "focus" ? "text-neon-cyan text-glow" : "text-neon-green text-glow"
+                  state.mode === "focus" ? "text-neon-cyan text-glow" : "text-neon-green text-glow"
                 }`}
               >
-                {fmt(left)}
+                {fmt(state.left)}
               </div>
 
               <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-white/5">
                 <div
-                  className={`h-full transition-all ${mode === "focus" ? "bg-neon-cyan" : "bg-neon-green"}`}
+                  className={`h-full transition-all ${state.mode === "focus" ? "bg-neon-cyan" : "bg-neon-green"}`}
                   style={{ width: `${pct}%` }}
                 />
               </div>
 
               <div className="mt-6 flex gap-2">
                 <button
-                  onClick={() => setRunning((r) => !r)}
+                  onClick={() => dispatch({ type: "TOGGLE_RUNNING" })}
                   className={`flex flex-1 items-center justify-center gap-2 rounded-xl border px-4 py-3 font-semibold transition ${
-                    running
+                    state.running
                       ? "border-neon-orange/40 text-neon-orange hover:bg-neon-orange/10"
                       : "border-neon-cyan bg-neon-cyan text-background hover:opacity-90"
                   }`}
                 >
-                  {running ? <Pause size={16} /> : <Play size={16} />}
-                  {running ? "Pausar" : "Iniciar"}
+                  {state.running ? <Pause size={16} /> : <Play size={16} />}
+                  {state.running ? "Pausar" : "Iniciar"}
                 </button>
                 <button
                   onClick={reset}
@@ -173,7 +210,7 @@ export function Pomodoro() {
 
               <p className="mt-4 flex items-center justify-center gap-1.5 text-center text-xs text-muted-foreground">
                 <Coffee size={12} />
-                {mode === "focus"
+                {state.mode === "focus"
                   ? "Foque em um subtema até o timer zerar."
                   : "Levante, respire, beba água."}
               </p>

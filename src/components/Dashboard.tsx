@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { motion } from "framer-motion";
-import { useCourse } from "../contexts/CourseContext";
+import { useCourse } from "../contexts/useCourse";
 import type { NeonColor } from "../data/roadmap-data";
 
 const barColor: Record<NeonColor, string> = {

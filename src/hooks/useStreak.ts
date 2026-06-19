@@ -44,22 +44,19 @@ function computeStreak(dates: string[]): number {
 }
 
 export function useStreak(course: CourseId) {
-  // rev counter forces re-render after recordStudy
-  const [rev, setRev] = useState(0);
-
-  const dates = useMemo(() => loadDates(course), [course, rev]);
+  const [dates, setDates] = useState(() => loadDates(course));
 
   const streak = useMemo(() => computeStreak(dates), [dates]);
 
   const recordStudy = useCallback(() => {
     const todayStr = today();
-    const existing = loadDates(course);
-    if (!existing.includes(todayStr)) {
-      existing.push(todayStr);
-      saveDates(course, existing);
-      setRev((r) => r + 1);
-    }
+    setDates((prev) => {
+      if (prev.includes(todayStr)) return prev;
+      const next = [...prev, todayStr];
+      saveDates(course, next);
+      return next;
+    });
   }, [course]);
 
-  return { streak, recordStudy };
+  return { streak, dates, recordStudy };
 }

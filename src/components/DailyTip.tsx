@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Lightbulb, RefreshCw, Dumbbell } from "lucide-react";
-import { useCourse } from "../contexts/CourseContext";
+import { useCourse } from "../contexts/useCourse";
 
 function dayOfYear(d = new Date()) {
   const start = new Date(d.getFullYear(), 0, 0);
@@ -10,10 +10,7 @@ function dayOfYear(d = new Date()) {
 
 export function DailyTip() {
   const { topics } = useCourse();
-  const [seed, setSeed] = useState(0);
-  useEffect(() => {
-    setSeed(dayOfYear());
-  }, []);
+  const [seed, setSeed] = useState(() => dayOfYear());
 
   const tip = useMemo(() => {
     const all: { topic: string; sub: string; color: string }[] = [];

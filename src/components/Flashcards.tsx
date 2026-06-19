@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Shuffle, X, Eye, Check, RotateCcw } from "lucide-react";
-import { useCourse } from "../contexts/CourseContext";
+import { useCourse } from "../contexts/useCourse";
 import type { Topic } from "../data/roadmap-data";
 
 interface Card {
